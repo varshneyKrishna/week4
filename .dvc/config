@@ -1,0 +1,4 @@
+[core]
+    remote = gcsremote
+['remote "gcsremote"']
+    url = gs://vital-ensign-461311-c2-week2-dvc-unique
