@@ -1,45 +1,46 @@
 name: Sanity test
 
 on:
-    workflow_dispatch:  # manual trigger
+  workflow_dispatch:  # manual trigger
 
-    permissions:
-        contents: write
-            pull-requests: write
+permissions:
+  contents: write
+  pull-requests: write
 
-            jobs:
-                test_model:
-                      runs-on: ubuntu-latest
+jobs:
+  test_model:
+    runs-on: ubuntu-latest
 
-                            steps:
-                                    - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-                                            - name: Set up Python
-                                                      uses: actions/setup-python@v4
-                                                                with:
-                                                                            python-version: "3.9"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-                                                                                    - name: Install dependencies and run tests
-                                                                                              run: |
-                                                                                                          pip install -r requirements.txt
-                                                                                                                    pip install dvc[gcp]
-                                                                                                                              dvc pull  # fetch iris.csv, model, etc.
-                                                                                                                                        python3 -m unittest discover tests > test_output.txt
+      - name: Install dependencies and run tests
+        run: |
+          pip install -r requirements.txt
+          pip install dvc[gcp]
+          dvc pull
+          python3 -m unittest discover tests > test_output.txt
 
-                                                                                                                                              - name: Create and post CML report
-                                                                                                                                                        uses: iterative/setup-cml@v2
+      - name: Create and post CML report
+        uses: iterative/setup-cml@v2
 
-                                                                                                                                                                - name: Post report to PR
-                                                                                                                                                                          env:
-                                                                                                                                                                                      REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                                                                                                                                                                                                run: |
-                                                                                                                                                                                                            echo "# 🧪 Sanity Test Results" > report.md
-                                                                                                                                                                                                                      echo "## 🔍 Unit Test Output:" >> report.md
-                                                                                                                                                                                                                                echo "\`\`\`" >> report.md
-                                                                                                                                                                                                                                          cat test_output.txt >> report.md
-                                                                                                                                                                                                                                                    echo "\`\`\`" >> report.md
-                                                                                                                                                                                                                                                              echo "## 📊 Metrics:" >> report.md
-                                                                                                                                                                                                                                                                        echo "\`\`\`" >> report.md
-                                                                                                                                                                                                                                                                                  cat metrics.txt >> report.md
-                                                                                                                                                                                                                                                                                            echo "\`\`\`" >> report.md
-                                                                                                                                                                                                                                                                                                      cml comment create --publish report.md
+      - name: Post report to PR
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "# 🧪 Sanity Test Results" > report.md
+          echo "## 🔍 Unit Test Output:" >> report.md
+          echo "\`\`\`" >> report.md
+          cat test_output.txt >> report.md
+          echo "\`\`\`" >> report.md
+          echo "## 📊 Metrics:" >> report.md
+          echo "\`\`\`" >> report.md
+          cat metrics.txt >> report.md
+          echo "\`\`\`" >> report.md
+          cml comment create --publish report.md
+
